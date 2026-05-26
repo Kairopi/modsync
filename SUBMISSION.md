@@ -59,7 +59,7 @@ Tick every box. If any item is `[ ]`, do not submit.
 - [ ] `docs/demo-script.md` committed (the source-of-truth for the recording)
 - [ ] `.kiro/specs/modsync/{requirements,design,tasks}.md` committed (judges who care can audit the spec)
 - [ ] `.kiro/steering/03-implementation-log.md` committed (per-task ledger; signals build discipline)
-- [ ] Public GitHub repo URL captured below (replace `<INSERT GITHUB REPO URL>`)
+- [x] Public GitHub repo URL captured below (`https://github.com/Kairopi/modsync`)
 - [ ] Repo is public (or at minimum, judges have read access)
 
 ### Hackathon form gate
@@ -130,7 +130,7 @@ typescript, react, devvit-web, redis, realtime, hono, vite, fast-check, vitest, 
 ### Try it out — links
 
 - **App Directory listing**: `https://developers.reddit.com/apps/modsync-set`
-- **GitHub repo**: `<INSERT GITHUB REPO URL>`
+- **GitHub repo**: `https://github.com/Kairopi/modsync`
 - **Test subreddit** (live install): `https://www.reddit.com/r/Modsynnow/`
 
 ### Video
