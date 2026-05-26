@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "ModSync: load spec before task",
+  "description": "Before any spec task starts, read requirements.md, design.md, the relevant tasks.md section, and the implementation log so the executing agent has full context and does not digress.",
+  "version": "1",
+  "when": {
+    "type": "preTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Before you start this task, you MUST:\n\n1. Read `.kiro/specs/modsync/requirements.md` (full).\n2. Read `.kiro/specs/modsync/design.md` (full) — pay special attention to the Redis schema, the realtime channel naming, the TypeScript types, the menu/form/trigger flows, and the 11 correctness properties.\n3. Read the relevant section of `.kiro/specs/modsync/tasks.md` for the task ID you are about to execute. Note the explicit file paths, function signatures, PBT properties, acceptance signal, priority, and estimate.\n4. Read `.kiro/steering/03-implementation-log.md` to see what previous tasks have already created (files, public exports, decisions). DO NOT re-implement what already exists. If your task imports from a module created by a previous task, USE the exports listed in the log.\n5. Cross-check `.kiro/steering/01-build-truth.md` — if anything in the task description contradicts that file (e.g. esbuild, separate tsconfigs, SCAN, LIST, `:` in channels, `onAccountDelete`), the build-truth file wins. Surface the conflict and resolve to the build-truth version.\n\nHard rules while executing the task:\n- Stay inside the file paths the task authorizes. Do not create modules the task does not list.\n- Property tests are MANDATORY at the iteration count the task names. fast-check must run ≥100 (or ≥200 where specified).\n- `requireMod` must wrap every menu, form, and mutating /api endpoint. Tests must verify it.\n- Soft-warning is a Devvit Form, not a React dialog — never mount a webview dialog for it.\n- After implementing, run `npm run type-check && npm run build && npm test -- <relevant-spec>` and confirm exit 0 before declaring success.\n- After success, append a single entry to `.kiro/steering/03-implementation-log.md` in the documented format.\n\nIf any aspect of the task is impossible or contradicts the toolchain, STOP and report it instead of silently working around it."
+  }
+}

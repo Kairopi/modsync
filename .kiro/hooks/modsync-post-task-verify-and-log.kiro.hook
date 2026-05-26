@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "ModSync: verify build and update log after task",
+  "description": "After a spec task is set to completed, verify the build/typecheck/test still pass and confirm the implementation log was updated with a properly-formatted entry.",
+  "version": "1",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A spec task just completed. Verify the workspace is still healthy before the next task starts:\n\n1. Run `npm run type-check` — must exit 0. If it fails, the previous task left the build broken. Reopen the task, fix it, and re-run.\n2. Run `npm run build` — must exit 0. Same rule on failure.\n3. Run `npm test -- --run` (vitest) — every property test must pass at its specified iteration count. Same rule on failure.\n4. Read `.kiro/steering/03-implementation-log.md` and confirm the most recent entry matches the just-completed task and includes:\n   - Files (relative paths)\n   - Public exports\n   - Tests (file path + iteration counts for any PBT)\n   - Build PASS/FAIL\n   - Deviations from spec (or \"none\")\n   - Decisions worth remembering\n   If the entry is missing or malformed, append/correct it now.\n5. If any of steps 1-3 failed, STOP execution of further tasks and report the failure clearly. Do not let cascade-broken state propagate to the next subagent.\n\nKeep the report short — one paragraph confirming status, or a clear failure description."
+  }
+}

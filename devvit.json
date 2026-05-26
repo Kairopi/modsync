@@ -1,0 +1,61 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "modsync-set",
+  "post": {
+    "dir": "dist/client",
+    "entrypoints": {
+      "default": {
+        "entry": "index.html",
+        "height": "tall"
+      }
+    }
+  },
+  "server": {
+    "dir": "dist/server",
+    "entry": "index.cjs"
+  },
+  "permissions": {
+    "reddit": {
+      "enable": true,
+      "scope": "moderator"
+    },
+    "redis": true,
+    "realtime": true
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Claim for review",
+        "forUserType": "moderator",
+        "location": ["post", "comment"],
+        "endpoint": "/internal/menu/claim"
+      },
+      {
+        "label": "Run combo…",
+        "forUserType": "moderator",
+        "location": ["post", "comment"],
+        "endpoint": "/internal/menu/combo-picker"
+      }
+    ]
+  },
+  "forms": {
+    "softWarningForm": "/internal/form/soft-warning-submit",
+    "comboPickerForm": "/internal/form/combo-picker-submit",
+    "comboEditorForm": "/internal/form/combo-editor-submit"
+  },
+  "triggers": {
+    "onAppInstall": "/internal/trigger/app-install",
+    "onPostDelete": "/internal/trigger/post-delete",
+    "onCommentDelete": "/internal/trigger/comment-delete"
+  },
+  "marketingAssets": {
+    "icon": "assets/icon.png"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch"
+  },
+  "dev": {
+    "subreddit": "Modsynnow"
+  }
+}
