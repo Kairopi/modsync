@@ -36,15 +36,18 @@ If any subagent edits any of these fields to a different value, STOP and surface
 1. ✅ `npx devvit logout` — wiped a stale token from a prior account
 2. ✅ `npx devvit login` — OAuth flow as `u/Standard-Hotel6953`, token saved
 3. ✅ `npx devvit whoami` — confirmed `Logged in as u/Standard-Hotel6953`
+4. ✅ `npx devvit upload` — version `0.0.1` of `modsync-set` registered as DRAFT in App Directory (`https://developers.reddit.com/apps/modsync-set`)
+5. ✅ `npx devvit publish` — version `0.0.2` built, source zip uploaded, submitted for Reddit review (custom-post apps require review before public listing). Status: **pending review**, email notification expected on approval. App is already installable via the unlisted DRAFT URL — review only gates public App Directory discovery.
 
 ## CLI commands the user has NOT yet run (gated)
 
-- ❌ `npm run dev` (= `devvit playtest`) — DO NOT run until task 1.1 + 1.2 land. Running it now uploads a half-template / half-modsync bundle to Reddit's app directory under slug `modsync-set` permanently. First impression matters; we want the first upload to be the spec-aligned wiring, not the template stub.
-- ❌ `devvit upload` (production deploy) — only after all tasks complete and the build is fully verified.
+- ❌ `npm run dev` (= `devvit playtest`) — not strictly needed since the app is already uploaded and published. Use only if you want to test changes locally before re-uploading. NOTE: every `playtest` run uploads a new version, so don't use it casually post-publish.
 
 ## After first `devvit upload` (will happen later)
 
 After the first upload, Devvit auto-creates an app account `u/modsync-set`. The user must invite this account as a moderator of `r/Modsynnow` with full permissions before flipping `seedEnabled` on.
+
+**Status (post-publish)**: app account `u/modsync-set` is auto-created by Reddit at the upload step; check `https://www.reddit.com/r/Modsynnow/about/moderators/` and invite `u/modsync-set` with **Full** permissions. The account auto-accepts within a few seconds.
 
 ## Tokens to ignore
 
