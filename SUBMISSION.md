@@ -79,12 +79,12 @@ Tick every box. If any item is `[ ]`, do not submit.
 ModSync
 ```
 
-## Tagline (copy-paste)
+### Tagline (copy-paste)
 
 Devpost tagline field; ≤200 chars; the first ~100 are visible in cards.
 
 ```
-Real-time collision-free modqueue coordination for Reddit moderators. Soft 90-second claims plus reusable action combos eliminate the 74.5%-prevalence collision pain documented in arXiv 2509.
+Stops two Reddit moderators from doing the same job twice. A live "someone is here" indicator on every modqueue item, plus one-click action combos.
 ```
 
 ## What it does (description, copy-paste)
@@ -92,30 +92,34 @@ Real-time collision-free modqueue coordination for Reddit moderators. Soft 90-se
 Devpost description field; target ~250 words.
 
 ```
-ModSync prevents two moderators from unknowingly acting on the same item at the same time — the
-74.5%-prevalence collision pain documented in the September 2025 arXiv paper "In the Queue:
-Understanding How Reddit Moderators Use the Modqueue" (Cui et al., n=110 mods, 408 subreddits).
+ModSync is a moderator tool for Reddit. It solves one specific problem: when two
+moderators try to act on the same post or comment at the same time, they end up doing
+duplicate or conflicting work — one bans the user, the other deletes a comment, neither
+knows the other was already there.
 
-Today, large-sub mod teams coordinate ad-hoc on Discord and Slack. ModSync replaces that with
-four P0 capabilities, all built on the Devvit Web platform:
+A September 2025 Cornell research paper found 74.5% of moderators surveyed had hit this
+collision problem. The paper documents that mod teams currently coordinate by shouting
+in Discord or screen-sharing — there's no real-time presence indicator inside Reddit
+itself. ModSync fills that gap.
 
-1. Soft 90-second claims. When a mod opens an item, ModSync writes a per-thingId claim record to
-   per-install Redis with a 90s TTL and broadcasts a real-time event on a per-sub channel. A
-   second mod opening the same item sees a non-blocking warning Devvit Form: "u/alice is
-   reviewing this — 87s left." The second mod can override (recorded as a collision) or back off
-   (recorded as redundancy avoided).
+How it works in practice:
 
-2. Reusable action combos. Mods configure named recipes — for example, "spam-removal" runs
-   REMOVE then BAN-7-days then MODNOTE("Removed for spam", SPAM_WARNING) in a single click.
-   Combos cap at 50 per sub, 10 steps each. Two defaults are seeded on first install.
+When Alice clicks "Claim" on a post, ModSync places a 90-second soft lock on it and
+broadcasts to every other moderator's screen in real time. If Bob clicks the same post
+within 90 seconds, he sees a small dialog: "u/alice is reviewing this — 67s left. Proceed
+anyway?" He can override (recorded as a real collision) or back off (recorded as a saved
+duplicate action). The lock auto-expires; nobody has to remember to release it.
 
-3. Live activity feed. The newest 500 actions stream in via Realtime, dedupe by ULID, and surface
-   moderator + thingId + comboName + per-step results.
+ModSync also ships "combos" — reusable multi-step recipes like "spam-removal" (REMOVE
+the post + BAN the user 7 days + add a SPAM_WARNING note) that run with one click instead
+of three. Two combos seed automatically on first install.
 
-4. Weekly + monthly metrics. The dashboard counts soft warnings shown, collisions detected, and
-   redundant actions avoided — concrete evidence of how often the tool prevents duplicate work.
+A live activity feed shows every moderator action across the sub in real time, and a
+metrics tab counts how often the soft warning fires, how many collisions were prevented,
+and how many duplicate actions were avoided. That gives mod teams real numbers to point
+at when justifying tools.
 
-ModSync is complementary to MQCC and OmniMod (priority scoring, spam detection). The collision
+Complementary to MQCC and OmniMod (priority scoring, spam detection). The collision
 problem is a different problem — and one no existing app addresses.
 ```
 
@@ -167,15 +171,19 @@ u/Standard-Hotel6953
 ### Tool overview (Devpost form: "Tool overview" or "Inspiration" — short paragraph)
 
 ```
-ModSync is a moderator-coordination tool for Reddit. It addresses the collision problem
-documented in the September 2025 arXiv paper "In the Queue: Understanding How Reddit
-Moderators Use the Modqueue" by Cui et al., where 74.5 percent of surveyed moderators
-reported acting on items another mod had already acted on. The tool issues soft 90-second
-claims when a mod opens an item, broadcasts the claim in real time to other mods of the
-same sub, and lets mods configure reusable action combos (REMOVE + BAN + MODNOTE in one
-click). Built end-to-end on Devvit Web with a fast-check property-based test suite (180+
-tests, 11 formal correctness properties). Per-install Redis isolation, deletion-trigger
-compliance, and read-time scrubbing of deleted moderator accounts are baked in.
+ModSync is the missing "presence" layer for Reddit moderation. When two mods are about to
+act on the same post or comment, ModSync warns them in real time so they don't
+accidentally double-ban a user or write contradictory mod notes. It also ships one-click
+"combos" — reusable recipes that chain actions like REMOVE + BAN + MODNOTE into a single
+button, instead of three separate clicks per item.
+
+The problem is real: a Cornell research paper from September 2025 surveyed 110 moderators
+across 408 subreddits and found 74.5% had hit this collision problem. Today mod teams
+coordinate by shouting in Discord. ModSync moves that coordination inside Reddit itself.
+
+Built on Devvit Web with 186 tests across 27 files (11 fast-check property-based tests
+at 100-200 iterations each). Per-install Redis isolation, deletion-trigger compliance,
+and read-time scrubbing of deleted-mod accounts are all built in.
 ```
 
 ## Project Impact (copy-paste)

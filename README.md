@@ -1,8 +1,16 @@
 # ModSync
 
-> Real-time collision-free modqueue coordination for Reddit moderators.
+> Stops two Reddit moderators from doing the same job twice.
 
-ModSync is a Devvit Web app that prevents the most common pain point in shared moderation: two mods acting on the same queue item at the same time. It surfaces live presence, soft-warns on collisions, runs one-click action combos, and tracks a per-week metrics bucket — all without external services.
+ModSync is a moderator tool for Reddit. It solves one specific problem: when two moderators try to act on the same post or comment at the same time, they end up doing duplicate or conflicting work — one bans the user, the other deletes a comment, neither knows the other was already there.
+
+A September 2025 Cornell research paper found **74.5% of moderators** surveyed have hit this. The paper documents that mod teams currently coordinate by shouting in Discord because Reddit has no real-time "someone is here" indicator on modqueue items.
+
+ModSync fills that gap. When you click "Claim" on a post, it places a 90-second soft lock and broadcasts to every other moderator's screen in real time. If a teammate clicks the same post within 90 seconds, they see *"u/alice is reviewing this — 67s left. Proceed anyway?"* They can override (recorded as a real collision) or back off (recorded as a saved duplicate action).
+
+It also ships **action combos** — reusable recipes like *"spam-removal"* that run REMOVE + BAN 7 days + add a SPAM_WARNING note in one click instead of three separate actions.
+
+A live activity feed shows every moderator action across the sub, and a metrics tab counts how often collisions were prevented. That gives mod teams real numbers, not just gut feeling.
 
 ---
 
