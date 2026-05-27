@@ -40,6 +40,7 @@ If any subagent edits any of these fields to a different value, STOP and surface
 5. ✅ `npx devvit publish` — version `0.0.2` built, source zip uploaded, submitted for Reddit review. Same scaffold-stubs caveat as 0.0.1 — superseded.
 6. ✅ `npx devvit upload` (post-wiring) — version `0.0.3` uploaded with the production wiring layer (`src/server/wiring.ts` + rewritten `src/server/routes/{api,menu,forms,triggers}.ts`). Every menu, form, trigger, and `/api/*` endpoint now dispatches to the real spec-module handler with the per-request Devvit `redis`/`realtime`/`reddit`/`settings`/`context` clients.
 7. ✅ `npx devvit publish` (post-wiring) — version `0.0.4` built, source zip uploaded, submitted for Reddit review. THIS is the version judges will see when the app is approved. All 186 unit tests still pass; build is green; lint is green.
+8. ✅ `npx devvit upload` + `npx devvit publish` (README plain-English rewrite) — version `0.0.6` published. Same wired bundle as v0.0.4; the only change is `README.md` rewritten so the App Directory page at `https://developers.reddit.com/apps/modsync-set` leads with friendly user-facing copy ("Stops two Reddit moderators from doing the same job twice. ModSync is a moderator tool for Reddit. It solves one specific problem...") and pushes the technical depth (architecture, Redis schema, server modules, etc.) below a `## For developers` heading. Subreddit moderators browsing the directory now get the pitch in 10 seconds; engineers auditing the code still get the full depth.
 
 ## CLI commands the user has NOT yet run (gated)
 
