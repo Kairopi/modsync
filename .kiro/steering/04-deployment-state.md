@@ -36,8 +36,10 @@ If any subagent edits any of these fields to a different value, STOP and surface
 1. ✅ `npx devvit logout` — wiped a stale token from a prior account
 2. ✅ `npx devvit login` — OAuth flow as `u/Standard-Hotel6953`, token saved
 3. ✅ `npx devvit whoami` — confirmed `Logged in as u/Standard-Hotel6953`
-4. ✅ `npx devvit upload` — version `0.0.1` of `modsync-set` registered as DRAFT in App Directory (`https://developers.reddit.com/apps/modsync-set`)
-5. ✅ `npx devvit publish` — version `0.0.2` built, source zip uploaded, submitted for Reddit review (custom-post apps require review before public listing). Status: **pending review**, email notification expected on approval. App is already installable via the unlisted DRAFT URL — review only gates public App Directory discovery.
+4. ✅ `npx devvit upload` — version `0.0.1` of `modsync-set` registered as DRAFT in App Directory (`https://developers.reddit.com/apps/modsync-set`). NOTE: this version was a stub-routes scaffold that did NOT dispatch to any spec-module handlers — superseded.
+5. ✅ `npx devvit publish` — version `0.0.2` built, source zip uploaded, submitted for Reddit review. Same scaffold-stubs caveat as 0.0.1 — superseded.
+6. ✅ `npx devvit upload` (post-wiring) — version `0.0.3` uploaded with the production wiring layer (`src/server/wiring.ts` + rewritten `src/server/routes/{api,menu,forms,triggers}.ts`). Every menu, form, trigger, and `/api/*` endpoint now dispatches to the real spec-module handler with the per-request Devvit `redis`/`realtime`/`reddit`/`settings`/`context` clients.
+7. ✅ `npx devvit publish` (post-wiring) — version `0.0.4` built, source zip uploaded, submitted for Reddit review. THIS is the version judges will see when the app is approved. All 186 unit tests still pass; build is green; lint is green.
 
 ## CLI commands the user has NOT yet run (gated)
 
