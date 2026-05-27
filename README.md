@@ -16,80 +16,101 @@ A live activity feed shows every moderator action across the sub, and a metrics 
 
 ## Table of Contents
 
-- [The Problem (cite the research)](#the-problem-cite-the-research)
+- [The problem (cite the research)](#the-problem-cite-the-research)
 - [What ModSync Does](#what-modsync-does)
-- [How It's Different from MQCC / OmniMod](#how-its-different-from-mqcc--omnimod)
-- [Architecture](#architecture)
-- [Quick Stats](#quick-stats)
-- [Installation](#installation)
-- [Demo Flow (two-browser collision walkthrough)](#demo-flow-two-browser-collision-walkthrough)
-- [Project Layout](#project-layout)
-- [API Surface](#api-surface)
-- [Settings](#settings)
-- [Testing Strategy](#testing-strategy)
-- [Compliance](#compliance)
-- [Development Commands](#development-commands)
+- [How ModSync Differs from MQCC and OmniMod](#how-modsync-differs-from-mqcc-and-omnimod)
+- [Privacy and Data Handling](#privacy-and-data-handling)
+- [For developers](#for-developers)
+  - [Architecture](#architecture)
+  - [Quick Stats](#quick-stats)
+  - [Installation](#installation)
+  - [Demo Flow (two-browser collision walkthrough)](#demo-flow-two-browser-collision-walkthrough)
+  - [Project Layout](#project-layout)
+  - [API Surface](#api-surface)
+  - [Settings](#settings)
+  - [Testing Strategy](#testing-strategy)
+  - [Compliance](#compliance)
+  - [Development Commands](#development-commands)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
 ---
 
-## The Problem (cite the research)
+## The problem (cite the research)
 
-The Sept 2025 arXiv study **"In the Queue: Understanding How Reddit Moderators Use the Modqueue"** (n=110 moderators across 408 subreddits) reports that **74.5% of moderators have experienced collisions** — multiple mods acting on the same queue item simultaneously. The result is duplicate bans, conflicting decisions, contradictory mod notes, and wasted reviewer effort.
+A September 2025 Cornell research paper, **["In the Queue: Understanding How Reddit Moderators Use the Modqueue"](#)** (n=110 moderators across 408 subreddits), reports that **74.5% of moderators have experienced collisions** — multiple moderators acting on the same queue item simultaneously. The result is duplicate bans, conflicting decisions, contradictory mod notes, and wasted reviewer effort.
 
-Existing mod tools focus on *what* to review (priority queues, signal aggregation). ModSync focuses on *who is reviewing what right now*, which is the gap the arXiv paper identifies as missing from the moderator workflow.
+Existing mod tools focus on *what* to review (priority queues, signal aggregation). ModSync focuses on *who is reviewing what right now*, which is the gap the research paper identifies as missing.
 
-The paper also notes that moderators describe coordination as ad-hoc — usually a Discord channel, sometimes a pinned mod-only post, occasionally just hoping. None of those scale past ~5 active mods, and none provide programmatic guarantees that two reviewers won't act on the same item. ModSync fills that gap with a 90-second soft claim that's broadcast to every connected mod via Devvit's Realtime channels.
+The paper notes that mod teams coordinate ad-hoc — usually a Discord channel, sometimes a pinned mod-only post, occasionally just hoping. None of those scale past about 5 active mods, and none give any guarantee that two reviewers won't act on the same item. ModSync fixes that with a 90-second soft claim that's broadcast to every connected mod the instant it's placed.
 
 ---
 
 ## What ModSync Does
 
-Four P0 capabilities. Each is small enough to grasp in one read; together they replace the "shout in Discord" workflow with structured coordination.
+Four things, all visible from the dashboard the app pins to your subreddit on first install.
 
-### 1. Live presence + soft claims on modqueue items (90s TTL)
+### 1. A "someone is here" indicator on every modqueue item
 
-Click **"Claim for review"** on any post or comment from the moderator menu and a 90-second claim is broadcast to every connected mod through the `claims-{sub}` Realtime channel. The claim auto-expires so a forgotten claim never blocks the queue.
+Click **Claim for review** on a post or comment from the moderator menu. ModSync places a 90-second soft lock and broadcasts to every other moderator's screen in real time. The lock auto-expires — nobody has to remember to release it.
 
-If another moderator already holds a claim on the item, you see a **soft-warning Devvit Form** showing who holds it, how long is left, and a `Proceed?` toggle. Override consciously, or cancel cleanly. Both outcomes feed the metrics dashboard.
+If a teammate clicks the same post within those 90 seconds, they see a small dialog:
 
-### 2. One-click action combos (REMOVE / LOCK / BAN / MODNOTE / APPROVE)
+> *u/alice is reviewing this — 67s left. Proceed anyway?*
 
-Pre-build sequences and run them in one menu click. Two defaults ship out of the box:
+They can override (recorded as a real collision) or back off (recorded as a saved duplicate action). Both choices feed the metrics dashboard.
 
-| Combo | Steps |
+### 2. One-click combos for multi-step actions
+
+Instead of clicking Remove, then Ban, then Add Mod Note for every spam post, set up a **combo** once and run it in a single click. Two combos seed automatically on first install:
+
+| Combo | What it does |
 | --- | --- |
-| `spam-removal` | REMOVE → BAN 7d "Spam" → MODNOTE `SPAM_WARNING` |
-| `rule-violation` | REMOVE → LOCK → MODNOTE `OTHER` |
+| **spam-removal** | Removes the post, bans the user 7 days, adds a SPAM_WARNING mod note |
+| **rule-violation** | Removes the post, locks the thread, adds a generic mod note |
 
-Add up to 50 per sub via the **Combos** tab. Each combo step is one of: `REMOVE`, `LOCK`, `APPROVE`, `BAN { days, reason }`, `MODNOTE { text, label? }`. The validator enforces step count 1-10, BAN.days 0-999, and MODNOTE.text up to 1000 chars.
+Mod teams can configure their own combos through the dashboard — up to 50 per subreddit, up to 10 steps per combo. Available actions are Remove, Lock, Approve, Ban (with duration and reason), and Mod Note (with optional label).
 
-### 3. Real-time team activity feed
+### 3. Live activity feed
 
-Every action a mod takes streams into a per-sub feed (last 500 entries) with moderator, target thing, combo name, and per-step success/failure detail. Failed combos show *which* step failed and the underlying error message, so reviewers can manually finish what auto-execution couldn't.
+Every moderator action across the sub streams into a feed (last 500 entries) showing who did what, on which post, and which combo they ran. Failed combos show *which step* failed, so a teammate can manually finish the job. The feed updates in real time — no refresh needed.
 
-### 4. Collision metrics dashboard
+### 4. Collision metrics
 
-Three counters tracked per ISO week, displayed in the **Metrics** tab with week and month rollups:
+A dashboard tab counts three things per ISO week (with a month rollup):
 
-- `softWarningsShown` — how many times a moderator hit the soft-warning form
-- `collisionsDetected` — how many times a moderator chose **Proceed** anyway
-- `redundantActionsAvoided` — how many times a moderator chose **Cancel**
+- **Soft warnings shown** — how many times the warning fired
+- **Collisions detected** — how many times a moderator hit Proceed anyway (real duplicate work that happened)
+- **Redundant actions avoided** — how many times a moderator backed off (duplicate work that did NOT happen — this is the success metric)
 
-The third counter is the success metric. Every increment is a duplicate ban or contradictory mod note that didn't happen.
+That third number is the one to watch. Every increment is a duplicate ban or contradictory mod note that didn't happen.
 
 ---
 
-## How It's Different from MQCC / OmniMod
+## How ModSync Differs from MQCC and OmniMod
 
 ModSync is **complementary, not competing.**
 
-- **MQCC** focuses on *priority scoring* — what should be reviewed first. ModSync focuses on *collision avoidance* — making sure two mods don't process the same item twice. Run them side by side: MQCC tells you what to look at, ModSync tells you who's already looking.
-- **OmniMod** and other multi-purpose mod toolkits cover bulk actions and rule automation. ModSync deliberately stays narrow: presence, claims, combos, activity, metrics. Less surface area, less to learn, faster review cycles.
+- **MQCC** scores the modqueue by priority — it tells you *what to look at first*. ModSync tells you *who's already looking at it*. Run them side by side; they answer different questions.
+- **OmniMod** and other multi-tool moderation toolkits cover bulk actions and rule automation. ModSync deliberately stays narrow: presence, claims, combos, activity, metrics. Less surface area, less to learn.
 - **AutoModerator and rule bots** act on rules, not on humans. ModSync coordinates the humans.
 
-The narrow scope is intentional. The arXiv research identified collision avoidance as a specific, unsolved problem; ModSync solves it without trying to be everything else.
+The narrow scope is intentional. The collision problem is specific and unsolved; ModSync solves it without trying to be everything else.
+
+---
+
+## Privacy and Data Handling
+
+- **No external services.** Every byte of state lives in Reddit's per-install Redis namespace. Nothing leaves Reddit's infrastructure.
+- **Per-subreddit isolation.** Data from one install never leaks to another.
+- **Compliance built in.** When a post or comment is deleted, its action history is automatically purged. When a moderator deletes their Reddit account, their name is replaced with `[deleted]` in the activity feed (the underlying audit log stays preserved for moderator records, but UI never shows the old username).
+- **Moderator-only.** Every menu item, every dashboard, every API endpoint requires moderator permissions on the subreddit.
+
+---
+
+## For developers
+
+Everything below is the technical depth. Skip if you're a moderator just trying to install the app.
 
 ---
 
